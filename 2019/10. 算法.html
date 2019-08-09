@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>算法</title>
+</head>
+<body>
+
+<script>
+  // 1. 排序=======================================================================
+  function bubble(arr) {
+    for(let i = 0; i < arr.length; i++) {
+      for(let j = i; j < arr.length - i; j++) {
+        if (arr[j] > arr[j + 1]) {
+          let temp = arr[j]
+          arr[j] = arr[j + 1]
+          arr[j + 1] = temp
+        }
+      }
+    }
+    return arr
+  }
+  function quickSort(arr) {
+    if (!arr || arr.length < 2) return arr
+    const halfIndex = arr.length / 2
+    const middle = arr.splice(halfIndex, 1)[0]
+    const left = []
+    const right = []
+    for(let i = 0; i < arr.length; i++) {
+      if (arr[i] <= middle) {
+        left.push(arr[i])
+      } else {
+        right.push(arr[i])
+      }
+    }
+    return quickSort(left).concat([middle], quickSort(right))
+  }
+  // const a = bubble([2, 1, 8, 3, 5])
+  // const a = quickSort([2, 1, 8, 3, 5])
+  // console.log(a)
+
+  // 2. 千分位=====================================================================
+  function thousandFormat(number) {
+    return number.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')
+  }
+  // console.log(thousandFormat(213423543543))
+
+  // 3. 用js实现`JSON.Stringify`===================================================
+  function stringify(obj) {
+    if (typeof obj === 'undefined' || obj instanceof Function) return undefined
+    if (obj instanceof String) return `"${s}"`
+
+    if (obj instanceof Array) {
+      let res = '['
+      for (let i = 0; i < obj.length; i++){
+        res += (i ? ', ' : '') + stringify(obj[i])
+      }
+      res += ']'
+      return res
+    } else if (obj instanceof Object) {
+      let result = []
+      for (k in obj) {
+        result.push(stringify(k) + ':' + stringify(obj[k]))
+      }
+      return '{' + result.join(', ') + '}'
+    }
+
+    return String(obj)
+  }
+  // const obj = {a: 1, b: 'asd', c: {n: 2}}
+  // console.log(stringify(obj))
+
+  // 4. 实现 `add(4)(2, 3)(10)` 得到结果 20=========================================
+  let times = 0
+  function add() {
+    const list = [...arguments]
+    let newList = [...list]
+    // 处理第一次的问题
+    if (times < 1) {
+      let val = list.reduce((a, b) => {
+        return a * b
+      })
+      newList = [val]
+      console.log(newList, list)
+    }
+    // 第一次不会进入该方法内部
+    const fn = (...args) => {
+      times++
+      // console.log('调用fn', args);
+      const temp = args.reduce((a, b) => {
+        return a * b
+      })
+      const _arr = [...newList, temp]
+      return add(..._arr)
+    }
+    // 该方法只在最后求值时调用
+    fn.toString = () => {
+      // console.log('调用valueOf');
+      return newList.reduce((a, b) => {
+        return a + b;
+      })
+    }
+
+    return fn;
+  }
+  // const a = add(4, 2)(2, 3)(10)
+  // console.log(a)
+
+  // 5. 数组去重====================================================================
+  /*
+    方法一：双数组
+    方法二：放入对象
+    方法三：ES6的Set
+      const arr = [1, 2, 3, 2, 1, 4, 6, 3, 2]
+      new Set(arr)
+    方法四：先排序后比较
+  */
+  
+  // 6. 实现 `a == 1 && a == 2 && a == 3`
+  // const obj1 = {
+  //   i: 1,
+  //   valueOf() {
+  //     return obj1.i++
+  //   }
+  // }
+  // if (obj1 == 1 && obj1 == 2 && obj1 == 3) {
+  //   console.log(obj1)
+  // }
+
+  // 7. JS实现多继承
+  /**
+    function child(name) {
+      parent1.call(this. name)
+      parent2.call(this. name)
+    }
+    for (i in parent1.prototype) {
+      children.prototype[i] = parent1.prototype[i]
+    }
+    // 同理另一个parent
+  */
+
+</script>
+</body>
+</html>
