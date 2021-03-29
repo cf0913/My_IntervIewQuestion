@@ -10,7 +10,7 @@
 堆区内存一般由程序员分配释放，若程序员不释放，程序结束时可能由垃圾回收机制回收
 ```
 ---
-2.this的指向和函数的调用模式
+2. this的指向和函数的调用模式
 ```js
 函数调用
   this 指向全局，即 window
@@ -22,7 +22,7 @@
   this 指向定义的对象
 ```
 ---
-3.数据类型及判断方法
+3. 数据类型及判断方法
 ```js
 Number，String，Boolean，Array，Object，undefined，null，Function，Symbol，BigInt
 
@@ -30,7 +30,7 @@ typeof
 instanceof  用于检测构造函数的 prototype 属性是否出现在某个实例对象的原型链上
 ```
 ---
-4.原型链
+4. 原型链
 ```js
 什么是原型链
   - 实例对象的constructor是一个构造函数
@@ -53,15 +53,51 @@ new运算符干了什么
   - 如果没有返回，则创建了一个新的对象
 ```
 ---
-5.对象的深拷贝
+5. 对象的深拷贝
 ```js
 - 投机取巧的 JSON.Stringify
 - 循环递归，且继承其prototype
 - 堆栈方式
 - 把对象当作树，遍历树
+
+// 浅拷贝的实现;
+
+function shallowCopy(object) {
+  // 只拷贝对象
+  if (!object || typeof object !== "object") return;
+
+  // 根据 object 的类型判断是新建一个数组还是对象
+  let newObject = Array.isArray(object) ? [] : {};
+
+  // 遍历 object，并且判断是 object 的属性才拷贝
+  for (let key in object) {
+    if (object.hasOwnProperty(key)) {
+      newObject[key] = object[key];
+    }
+  }
+
+  return newObject;
+}
+
+// 深拷贝的实现;
+
+function deepCopy(object) {
+  if (!object || typeof object !== "object") return;
+
+  let newObject = Array.isArray(object) ? [] : {};
+
+  for (let key in object) {
+    if (object.hasOwnProperty(key)) {
+      newObject[key] =
+        typeof object[key] === "object" ? deepCopy(object[key]) : object[key];
+    }
+  }
+
+  return newObject;
+}
 ```
 ---
-6.AMD和CMD标准，CommonJS和ES Module
+6. AMD和CMD标准，CommonJS和ES Module
 ```js
 AMD和CMD标准
   - AMD: 提前执行（异步加载：依赖先执行）+ 延迟执行, 例如 RequireJs
@@ -84,7 +120,7 @@ ES Module
   - 可以对commonJS对重新赋值（改变指针指向），但是对ES6 Module赋值会编译报错
 ```
 ---
-7.事件冒泡和事件捕获
+7. 事件冒泡和事件捕获
 ```js
 事件捕获
   - 一层一层往下传递，到达目标元素 window -> document -> html -> body -> ...
@@ -98,7 +134,7 @@ addEventListener的第三个参数
   - 对于target节点则是先执行先注册的事件，无论冒泡还是捕获
 ```
 ---
-8.前端路由的实现方式
+8. 前端路由的实现方式
 ```js
 HTML5的history
   - 两个Api
@@ -216,5 +252,25 @@ number.replace(/(?!^)(?=(\d{3})+\.)/g, ",");
 其实闭包的本质就是作用域链的一个特殊的应用，只要了解了作用域链的创建过程，就能够理解闭包的实现原理。
 ```
 ---
-15. 
+15. 内存泄漏
+```js
+哪些操作会造成内存泄漏
+  1.意外的全局变量
+  2.被遗忘的计时器或回调函数
+  3.脱离 DOM 的引用
+  4.闭包
+
+怎么解决
+  1.尽量少用全局变量
+  2.清除定时器和解绑函数
+  3.已删除的元素要取消对其的引用
+  4.不实用不合理的闭包
+```
+---
+16. 如何判断当前环境是window还是node
+```js
+this === window ? 'browser' : 'node';
+```
+---
+17.
 
