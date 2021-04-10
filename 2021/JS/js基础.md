@@ -272,5 +272,10 @@ number.replace(/(?!^)(?=(\d{3})+\.)/g, ",");
 this === window ? 'browser' : 'node';
 ```
 ---
-17.
+17.实现一个setTimeOut和setInterval
+```js
+
+
+```
+---
 
