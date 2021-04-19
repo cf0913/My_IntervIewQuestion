@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <script>
+    // let a = add(4)(2, 3)(10);
+    // console.log(a)
+    function add () {
+      console.log('进入add');
+      var args = Array.prototype.slice.call(arguments);
+
+      var fn = function () {
+          console.log('调用fn');
+          var arg_fn = Array.prototype.slice.call(arguments);
+          var temp = 1;
+          arg_fn.forEach(val => {
+            temp *= val;
+          });
+          arg_fn = [temp]
+          return add.apply(null, args.concat(arg_fn));
+      }
+
+      fn.toString = function () {
+          console.log('调用toString');
+          return args.reduce(function(a, b) {
+              return a + b;
+          })
+      }
+
+      return fn;
+    }
+    let a = add(4)(2, 3)(10);
+    console.log(a);
+  </script>
+</body>
+
+</html>
