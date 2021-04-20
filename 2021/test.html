@@ -10,33 +10,26 @@
 
 <body>
   <script>
-    // let a = add(4)(2, 3)(10);
-    // console.log(a)
     function add () {
-      console.log('进入add');
-      var args = Array.prototype.slice.call(arguments);
-
-      var fn = function () {
-          console.log('调用fn');
-          var arg_fn = Array.prototype.slice.call(arguments);
-          var temp = 1;
-          arg_fn.forEach(val => {
-            temp *= val;
-          });
-          arg_fn = [temp]
-          return add.apply(null, args.concat(arg_fn));
+      let args = Array.prototype.slice.call(arguments);
+      function fn() {
+        let arg_fn = Array.prototype.slice.call(arguments);
+        let temp = 1;
+        arg_fn.forEach(val => {
+          temp *= val;
+        });
+        arg_fn = [temp]
+        return add.apply(null, args.concat(arg_fn));
       }
-
-      fn.toString = function () {
-          console.log('调用toString');
-          return args.reduce(function(a, b) {
-              return a + b;
-          })
+      fn.toString = () => {
+        return args.reduce((a, b) => {
+          return a + b;
+        })
       }
-
       return fn;
     }
-    let a = add(4)(2, 3)(10);
+
+    let a = add2(4)(2, 3)(10);
     console.log(a);
   </script>
 </body>
