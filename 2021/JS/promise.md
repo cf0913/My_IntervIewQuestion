@@ -111,25 +111,110 @@ MyPromise.prototype.then = function(onResolved, onRejected) {
 ---
 #### 2.实现一个Promise.all
 ```js
-
+function myAll(arr) {
+  if (!Array.isArray(arr)) {
+    throw new TypeError('You must pass array')
+  }
+  let result = [];
+  let count = 0;
+  return new Promise((resolve, reject) => {
+    for (let i = 0; i < arr.length; i++) {
+      Promise.resolve(arr[i]).then((res) => {
+        result[i] = res;
+        count++;
+        if (count === arr.length) {
+          return resolve(result);
+        }
+      }, (err) => {
+        return reject(err)
+      })
+    }
+  });
+}
+let p1 = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    resolve(1)
+  }, 5000);
+});
+let p2 = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    resolve(2)
+  }, 2000);
+});
+myAll([p1, p2]).then(res => {
+  console.log('all----', res);
+});
 ```
 ---
 #### 3.实现一个Promise.race
 ```js
-
+function myRace(arr) {
+  if (!Array.isArray(arr)) {
+    throw new TypeError('You must pass array')
+  }
+  return new Promise((resolve, reject) => {
+    for (let i = 0; i < arr.length; i++) {
+      Promise.resolve(arr[i]).then((res) => {
+        return resolve(res)
+      }, (err) => {
+        return reject(err)
+      })
+    }
+  });
+}
+let p1 = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    resolve(1)
+  }, 500);
+});
+let p2 = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    resolve(2)
+  }, 2000);
+});
+myRace([p1, p2]).then(res => {
+  console.log('all----', res);
+});
 ```
 ---
-#### 4.同时发送多个请求，返回最快的一个请求
+#### 4.同时发送多个请求，返回最慢的一个请求
 ```js
-
+function mySlow(arr) {
+  if (!Array.isArray(arr)) {
+    throw new TypeError('You must pass array')
+  }
+  let result = [];
+  let count = 0;
+  return new Promise((resolve, reject) => {
+    for (let i = 0; i < arr.length; i++) {
+      Promise.resolve(arr[i]).then((res) => {
+        result.push(res);
+        count++;
+        if (count === arr.length) {
+          return resolve(result[result.length - 1]);
+        }
+      }, (err) => {
+        return reject(err)
+      })
+    }
+  });
+}
+let p1 = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    resolve(1)
+  }, 500);
+});
+let p2 = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    resolve(2)
+  }, 2000);
+});
+mySlow([p1, p2]).then(res => {
+  console.log('slow----', res);
+});
 ```
 ---
-#### 5.同时发送多个请求，返回最慢的一个请求
-```js
-
-```
----
-#### 6. Promises/A+ 规范
+#### 5. Promises/A+ 规范
 ```js
 Promise 对象是异步编程的一种解决方案，最早由社区提出。Promises/A+ 规范是 JavaScript Promise 的标准，规定了一个 Promise 所必须具有的特性。
 

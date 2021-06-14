@@ -2,28 +2,19 @@
 #### 1.实现一个call
 ```js
 // call函数实现
-Function.prototype.myCall = function(context) {
-  // 判断调用对象
-  if (typeof this !== "function") {
-    console.error("type error");
-  }
-
-  // 获取参数
-  let args = [...arguments].slice(1),
-    result = null;
-
-  // 判断 context 是否传入，如果未传入则设置为 window
-  context = context || window;
-
-  // 将调用函数设为对象的方法
+Function.prototype.myCall = function (context) {
+  var context = context || window;  // 兼容传入的null
   context.fn = this;
 
-  // 调用函数
-  result = context.fn(...args);
+  var args = [];
+  for(var i = 1, len = arguments.length; i < len; i++) {
+    args.push('arguments[' + i + ']');
+  }
+  // 这里也可以用ES6的... , 但是call是ES3的方法，所以用eval
+  // var result = eval(context.fn(...args));
+  var result = eval('context.fn(' + args +')');
 
-  // 将属性删除
-  delete context.fn;
-
+  delete context.fn
   return result;
 };
 ```
@@ -38,8 +29,8 @@ Function.prototype.myBind = function(context) {
   }
 
   // 获取参数
-  var args = [...arguments].slice(1),
-    fn = this;
+  var args = [...arguments].slice(1);
+  var fn = this;
 
   return function Fn() {
     // 根据调用方式，传入不同绑定值
@@ -53,32 +44,22 @@ Function.prototype.myBind = function(context) {
 ---
 #### 3.实现一个apply
 ```js
-// apply 函数实现
-
-Function.prototype.myApply = function(context) {
-  // 判断调用对象是否为函数
-  if (typeof this !== "function") {
-    throw new TypeError("Error");
-  }
-
-  let result = null;
-
-  // 判断 context 是否存在，如果未传入则为 window
-  context = context || window;
-
-  // 将函数设为对象的方法
+// apply 函数实现, 和 call类似
+Function.prototype.apply = function (context, arr) {
+  var context = Object(context) || window;
   context.fn = this;
 
-  // 调用方法
-  if (arguments[1]) {
-    result = context.fn(...arguments[1]);
-  } else {
+  var result;
+  if (!arr) {
     result = context.fn();
+  } else {
+    var args = [];
+    for (var i = 0, len = arr.length; i < len; i++) {
+      args.push('arr[' + i + ']');
+    }
+    result = eval('context.fn(' + args + ')')
   }
-
-  // 将属性删除
-  delete context.fn;
-
+  delete context.fn
   return result;
 };
 ```

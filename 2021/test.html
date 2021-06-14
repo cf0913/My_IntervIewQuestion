@@ -10,27 +10,39 @@
 
 <body>
   <script>
-    function add () {
-      let args = Array.prototype.slice.call(arguments);
-      function fn() {
-        let arg_fn = Array.prototype.slice.call(arguments);
-        let temp = 1;
-        arg_fn.forEach(val => {
-          temp *= val;
-        });
-        arg_fn = [temp]
-        return add.apply(null, args.concat(arg_fn));
+    function mySlow(arr) {
+      if (!Array.isArray(arr)) {
+        throw new TypeError('You must pass array')
       }
-      fn.toString = () => {
-        return args.reduce((a, b) => {
-          return a + b;
-        })
-      }
-      return fn;
+      let result = [];
+      let count = 0;
+      return new Promise((resolve, reject) => {
+        for (let i = 0; i < arr.length; i++) {
+          Promise.resolve(arr[i]).then((res) => {
+            result.push(res);
+            count++;
+            if (count === arr.length) {
+              return resolve(result[result.length - 1]);
+            }
+          }, (err) => {
+            return reject(err)
+          })
+        }
+      });
     }
-
-    let a = add2(4)(2, 3)(10);
-    console.log(a);
+    let p1 = new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve(1)
+      }, 500);
+    });
+    let p2 = new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve(2)
+      }, 2000);
+    });
+    mySlow([p1, p2]).then(res => {
+      console.log('slow----', res);
+    });
   </script>
 </body>
 
