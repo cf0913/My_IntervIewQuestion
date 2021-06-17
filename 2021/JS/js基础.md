@@ -274,8 +274,51 @@ this === window ? 'browser' : 'node';
 ---
 17.实现一个setTimeOut和setInterval
 ```js
+// setTimeOut
+function myTimeOut(fn, time) {
+  var startTime = Date.now();
+  var nowTime = Date.now();
 
+  while(nowTime - startTime < time * 1000) {
+    nowTime = Date.now();
+  }
 
+  fn();
+
+  return Math.random();
+}
+// setInterval
+function mySetInterval(fn, millisec, count){
+  function interval(){
+    if(typeof count===‘undefined’||count-->0){
+      setTimeout(interval, millisec);
+      try{
+        fn()
+      }catch(e){
+        count = 0;
+        throw e.toString();
+      }
+    }
+  }
+  setTimeout(interval, millisec)
+}
+```
+---
+18. 实现一个 new 
+```js
+function myNew(fn) {
+  if (typeof fn !== 'function') {
+    throw 'params show be function';
+  }
+  myNew.target = fn;
+  var newObj = Object.create(fn.prototype);
+  var argsArr = [].prototype.slice.call(arguments, 1);
+  var res = fn.apply(newObj, argsArr);
+  var isObject = res && typeof res === 'object';
+  var isFunction = typeof res === 'function';
+  if (isObj || isFunction) return res;
+  return newObj;
+}
 ```
 ---
 
