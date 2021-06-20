@@ -275,32 +275,34 @@ this === window ? 'browser' : 'node';
 17.实现一个setTimeOut和setInterval
 ```js
 // setTimeOut
-function myTimeOut(fn, time) {
-  var startTime = Date.now();
-  var nowTime = Date.now();
-
-  while(nowTime - startTime < time * 1000) {
-    nowTime = Date.now();
-  }
-
-  fn();
-
-  return Math.random();
-}
-// setInterval
-function mySetInterval(fn, millisec, count){
-  function interval(){
-    if(typeof count===‘undefined’||count-->0){
-      setTimeout(interval, millisec);
-      try{
-        fn()
-      }catch(e){
-        count = 0;
-        throw e.toString();
-      }
+function myTimeOut(fn, timeout, ...args) => {
+  // 初始当前时间
+  const start = +new Date();
+  let timer, now;
+  const loop = () => {
+    timer = window.requestAnimationFrame(loop);
+    // 再次运行时获取当前时间
+    now = +new Date();
+    // 当前运行时间 - 初始当前时间 >= 等待时间 ===>> 跳出
+    if (now - start >= timeout) {
+      fn.apply(this, args);
+      window.cancelAnimationFrame(timer);
     }
   }
-  setTimeout(interval, millisec)
+  window.requestAnimationFrame(loop);
+  return timer;
+}
+// setInterval
+function myInterval(fn, interval) {
+  const timer = setTimeout(() => {
+    fn();
+    myInterval(fn, interval);
+  }, interval)
+  return timer;
+}
+
+function myClearInterval(timer) {
+  clearTimeout(timer);
 }
 ```
 ---
