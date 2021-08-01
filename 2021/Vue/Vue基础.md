@@ -342,5 +342,96 @@ Vue.observable({ count : 1})
 new vue({ count : 1})
 // 在 Vue 2.x 中，被传入的对象会直接被 Vue.observable 变更，它和被返回的对象是同一个对象
 // 在 Vue 3.x 中，则会返回一个可响应的代理，而对源对象直接进行变更仍然是不可响应的
+
+// 使用场景
+// 简单的组件通信
+
+// 原理分析
+// 创建了全局的响应式数据，和vuex类似
+
+// 使用
+// 1. 创建store
+// 引入vue
+import Vue from 'vue'
+// 创建state对象，使用observable让state对象可响应
+export let state = Vue.observable({
+  name: '张三',
+  'age': 38
+})
+// 创建对应的方法
+export let mutations = {
+  changeName(name) {
+    state.name = name
+  },
+  setAge(age) {
+    state.age = age
+  }
+}
+// 2. 在.vue文件中直接使用
+<template>
+  <div>
+    姓名：{{ name }}
+    年龄：{{ age }}
+    <button @click="changeName('李四')">改变姓名</button>
+    <button @click="setAge(18)">改变年龄</button>
+  </div>
+</template>
+import { state, mutations } from '@/store
+export default {
+  // 在计算属性中拿到值
+  computed: {
+    name() {
+      return state.name
+    },
+    age() {
+      return state.age
+    }
+  },
+  // 调用mutations里面的方法，更新数据
+  methods: {
+    changeName: mutations.changeName,
+    setAge: mutations.setAge
+  }
+}
+```
+---
+#### v-show和v-if有什么区别
+```js
+1. 控制手段不同
+  - v-show隐藏则是为该元素添加css--display:none，dom元素依旧还在。
+  - v-if显示隐藏是将dom元素整个添加或删除
+2. 编译过程不同
+  - v-if切换有一个局部编译/卸载的过程，切换过程中合适地销毁和重建内部的事件监听和子组件；
+  - v-show只是简单的基于css切换
+3. 编译条件不同
+  - v-show 由false变为true的时候不会触发组件的生命周期
+  - v-if由false变为true的时候，触发组件的beforeCreate、create、beforeMount、mounted钩子，由true变为false的时候触发组件的beforeDestory、destoryed方法
+4. 性能消耗
+  - v-if有更高的切换消耗；
+  - v-show有更高的初始渲染消耗；
+
+// 原理分析
+v-show: 有transition就执行transition，没有就直接设置display属性
+v-if: 返回一个node节点, render函数通过表达式的值来决定是否生成DOM
+```
+---
+#### slot
+```
+作用：
+1. 插槽可以让用户可以拓展组件，去更好地复用组件和对其做定制化处理
+2. 通过slot插槽向组件内部指定位置传递内容，完成复用组件在不同场景的应用，比如布局组件、表格列、下拉选、弹框显示内容等
+
+用法：
+1. v-slot属性只能在<template>上使用，但在只有默认插槽时可以在组件标签上使用
+2. 默认插槽名为default，可以省略default直接写v-slot
+3. 缩写为#时不能不写参数，写成#default
+4. 可以通过解构获取v-slot={user}，还可以重命名v-slot="{user: newName}"和定义默认值v-slot="{user = '默认值'}"
+
+原理：
+slot本质上是返回VNode的函数，
+一般情况下，Vue中的组件要渲染到页面上需要经过template -> render function -> VNode -> DOM 过程
+
+先对children节点做归类和过滤处理，返回slots
+_render渲染函数通过normalizeScopedSlots得到vm.$scopedSlots
 ```
 ---
