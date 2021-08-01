@@ -134,3 +134,213 @@ Vue 一共有8个生命阶段，分别是创建前、创建后、加载前、加
 当我们使用 keep-alive 的时候，还有两个钩子函数，分别是 activated 和 deactivated 。用 keep-alive 包裹的组件在切换时不会进行销毁，而是缓存到内存中并执行 deactivated 钩子函数，命中缓存渲染后会执行 actived 钩子函数。
 ```
 ---
+#### 动态给vue的data添加一个新的属性时会发生什么？怎样解决？
+```js
+发生现象：可以设置上去，但是不会触发更新
+原因：因为没有被注册数据劫持，所以也观察不到它的更新
+解决方案：
+1. Vue.set()
+  - 通过Vue.set向响应式对象中添加一个property，并确保这个新 property 同样是响应式的，且触发视图更新
+ function set (target: Array<any> | Object, key: any, val: any): any {
+    ...
+    defineReactive(ob.value, key, val)  // 添加数据劫持
+    ob.dep.notify() // 添加订阅
+    return val
+  }
+2. Object.assign()
+  - 创建一个新的对象，合并原对象和混入对象的属性
+  - `this.someObject = Object.assign({},this.someObject,{newProperty1:1,newProperty2:2 ...})`
+3. $forceUpdate
+  - 强制更新视图
+```
+---
+#### 自定义指令
+```js
+// 全局注册注册主要是用过Vue.directive方法进行注册
+// 注册一个全局自定义指令 `v-focus`
+Vue.directive('focus', {
+  // 当被绑定的元素插入到 DOM 中时……
+  inserted: function (el) {
+    // 聚焦元素
+    el.focus()  // 页面加载完成之后自动让输入框获取到焦点的小功能
+  }
+})
+
+// 局部注册通过在组件options选项中设置directive属性
+directives: {
+  focus: {
+    // 指令的定义
+    inserted: function (el) {
+      el.focus() // 页面加载完成之后自动让输入框获取到焦点的小功能
+    }
+  }
+}
+
+// 应用场景
+// 1. 防抖------------------------------------------------
+// 1.设置v-throttle自定义指令
+Vue.directive('throttle', {
+  bind: (el, binding) => {
+    let throttleTime = binding.value; // 防抖时间
+    if (!throttleTime) { // 用户若不设置防抖时间，则默认2s
+      throttleTime = 2000;
+    }
+    let cbFun;
+    el.addEventListener('click', event => {
+      if (!cbFun) { // 第一次执行
+        cbFun = setTimeout(() => {
+          cbFun = null;
+        }, throttleTime);
+      } else {
+        event && event.stopImmediatePropagation();
+      }
+    }, true);
+  },
+});
+// 2.为button标签设置v-throttle自定义指令
+<button @click="sayHello" v-throttle>提交</button>
+// 2. 图片懒加载----------------------------------------------
+const LazyLoad = {
+    // install方法
+    install(Vue,options){
+    	  // 代替图片的loading图
+        let defaultSrc = options.default;
+        Vue.directive('lazy',{
+            bind(el,binding){
+                LazyLoad.init(el,binding.value,defaultSrc);
+            },
+            inserted(el){
+                // 兼容处理
+                if('IntersectionObserver' in window){
+                    LazyLoad.observe(el);
+                }else{
+                    LazyLoad.listenerScroll(el);
+                }
+                
+            },
+        })
+    },
+    // 初始化
+    init(el,val,def){
+        // data-src 储存真实src
+        el.setAttribute('data-src',val);
+        // 设置src为loading图
+        el.setAttribute('src',def);
+    },
+    // 利用IntersectionObserver监听el
+    observe(el){
+        let io = new IntersectionObserver(entries => {
+            let realSrc = el.dataset.src;
+            if(entries[0].isIntersecting){
+                if(realSrc){
+                    el.src = realSrc;
+                    el.removeAttribute('data-src');
+                }
+            }
+        });
+        io.observe(el);
+    },
+    // 监听scroll事件
+    listenerScroll(el){
+        let handler = LazyLoad.throttle(LazyLoad.load,300);
+        LazyLoad.load(el);
+        window.addEventListener('scroll',() => {
+            handler(el);
+        });
+    },
+    // 加载真实图片
+    load(el){
+        let windowHeight = document.documentElement.clientHeight
+        let elTop = el.getBoundingClientRect().top;
+        let elBtm = el.getBoundingClientRect().bottom;
+        let realSrc = el.dataset.src;
+        if(elTop - windowHeight<0&&elBtm > 0){
+            if(realSrc){
+                el.src = realSrc;
+                el.removeAttribute('data-src');
+            }
+        }
+    },
+    // 节流
+    throttle(fn,delay){
+        let timer; 
+        let prevTime;
+        return function(...args){
+            let currTime = Date.now();
+            let context = this;
+            if(!prevTime) prevTime = currTime;
+            clearTimeout(timer);
+            
+            if(currTime - prevTime > delay){
+                prevTime = currTime;
+                fn.apply(context,args);
+                clearTimeout(timer);
+                return;
+            }
+
+            timer = setTimeout(function(){
+                prevTime = Date.now();
+                timer = null;
+                fn.apply(context,args);
+            },delay);
+        }
+    }
+
+}
+export default LazyLoad;
+```
+---
+#### v-if 和 v-for 的优先级
+```js
+v-if 和 v-for 在同一个标签的时候，v-for 优先
+
+v-if 和 v-for 不在同一个标签的时候，v-if 优先
+
+所以为了避免性能的浪费，v-if 最好在 v-for 的外层
+```
+---
+#### 谈谈对keep-alive的理解
+```js
+1. Keep-alive 是什么
+  - keep-alive是vue中的内置组件，能在组件切换过程中将状态保留在内存中，防止重复渲染DOM
+  - keep-alive 包裹动态组件时，会缓存不活动的组件实例，而不是销毁它们
+  - 设置了 keep-alive 缓存的组件，会多出两个生命周期钩子（activated与deactivated）
+  - 首次进入组件时：beforeRouteEnter > beforeCreate > created> mounted > activated > ... ... > beforeRouteLeave > deactivated
+  - 再次进入组件时：beforeRouteEnter >activated > ... ... > beforeRouteLeave > deactivated
+2. 使用场景
+  - 当我们在某些场景下不需要让页面重新加载时我们可以使用keepalive
+3. 原理分析
+  - 该组件没有template，而是用了render，在组件渲染的时候会自动执行render函数
+  - this.cache是一个对象，用来存储需要缓存的组件
+  - 在组件销毁的时候执行pruneCacheEntry函数
+  - 如果include 或exclude 发生了变化，即表示定义需要缓存的组件的规则或者不需要缓存的组件的规则发生了变化，那么就执行pruneCache函数
+  - 在该函数内对this.cache对象进行遍历，取出每一项的name值，用其与新的缓存规则进行匹配，如果匹配不上，则表示在新的缓存规则下该组件已经不需要被缓存，则调用pruneCacheEntry函数将其从this.cache对象剔除即可
+4. 缓存后如何获取数据
+  - beforeRouteEnter
+  - actived
+```
+---
+#### Vue实例挂载的过程
+```js
+1. new Vue的时候调用会调用_init方法
+  - 定义 $set、 $get 、$delete、$watch 等方法
+  - 定义 $on、$off、$emit、$off 等事件
+  - 定义 _update、$forceUpdate、$destroy生命周期
+2. 调用$mount进行页面的挂载
+3. 挂载的时候主要是通过mountComponent方法
+4. 定义updateComponent更新函数
+5. 执行render生成虚拟DOM
+6. _update将虚拟DOM生成真实DOM结构，并且渲染到页面中
+```
+---
+#### Vue.observable
+```js
+// 定义：Vue.observable，让一个对象变成响应式数据。Vue 内部会用它来处理 data 函数返回的对象
+// 使用
+Vue.observable({ count : 1})
+// 等同于
+new vue({ count : 1})
+// 在 Vue 2.x 中，被传入的对象会直接被 Vue.observable 变更，它和被返回的对象是同一个对象
+// 在 Vue 3.x 中，则会返回一个可响应的代理，而对源对象直接进行变更仍然是不可响应的
+```
+---
