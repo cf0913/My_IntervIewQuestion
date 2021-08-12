@@ -60,6 +60,8 @@ export default function bindActionCreators (actionCreators, dispatch) {
 ---
 #### redux中间件原理
 ```js
+其本质上一个函数，对store.dispatch方法进行了改造，在发出 Action 和执行 Reducer 这两步之间，添加了其他功能
+
 // 调用applyMiddleware
 applyMiddleware(thunk, logger)
 
